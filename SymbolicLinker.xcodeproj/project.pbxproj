@@ -61,7 +61,7 @@
 		E0D938FF08EA2480005CF3DC /* it */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		E0D9390008EA2487005CF3DC /* it */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E0E29B4F1041EA5C001084AF /* SymbolicLinker.service */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SymbolicLinker.service; sourceTree = BUILT_PRODUCTS_DIR; };
-		E0E29B511041EA5C001084AF /* SymbolicLinkerService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "SymbolicLinkerService-Info.plist"; sourceTree = "<group>"; };
+		E0E29B511041EA5C001084AF /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
 		E0E29B581041ED13001084AF /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
 		E0E29B5A1041ED34001084AF /* SLAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SLAppDelegate.h; sourceTree = "<group>"; };
 		E0E29B5B1041ED34001084AF /* SLAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SLAppDelegate.m; sourceTree = "<group>"; };
@@ -102,7 +102,7 @@
 		089C167CFE841241C02AAC07 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				E0E29B511041EA5C001084AF /* SymbolicLinkerService-Info.plist */,
+				E0E29B511041EA5C001084AF /* Info.plist */,
 				B4DAA7751350418B00415B58 /* SymbolicLinkerService.icns */,
 				E0E29B581041ED13001084AF /* MainMenu.xib */,
 				E06E731A05520862007DB405 /* InfoPlist.strings */,
@@ -157,7 +157,7 @@
 		089C1669FE841209C02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0730;
+				LastUpgradeCheck = 0810;
 			};
 			buildConfigurationList = E0DC7C8508D40C5B00002C54 /* Build configuration list for PBXProject "SymbolicLinker" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -285,12 +285,12 @@
 		E0DC7C8608D40C5B00002C54 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_TESTABILITY = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				ONLY_ACTIVE_ARCH = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				WARNING_CFLAGS = "-Weverything";
 			};
 			name = Debug;
@@ -298,8 +298,9 @@
 		E0DC7C8708D40C5B00002C54 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				MACOSX_DEPLOYMENT_TARGET = 10.7;
 				WARNING_CFLAGS = "-Weverything";
 			};
 			name = Release;
@@ -308,18 +309,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(GCC_PREPROCESSOR_DEFINITIONS)",
 					USE_COCOA,
 				);
-				INFOPLIST_FILE = "SymbolicLinkerService-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				PRODUCT_BUNDLE_IDENTIFIER = "net.comcast.home.seiryu.${PRODUCT_NAME:rfc1034identifier}";
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.petermaurer.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SymbolicLinker;
 				WRAPPER_EXTENSION = service;
 			};
@@ -329,18 +325,13 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
-				COMBINE_HIDPI_IMAGES = YES;
-				COPY_PHASE_STRIP = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"$(GCC_PREPROCESSOR_DEFINITIONS)",
 					USE_COCOA,
 				);
-				INFOPLIST_FILE = "SymbolicLinkerService-Info.plist";
-				INSTALL_PATH = "$(HOME)/Applications";
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				PRODUCT_BUNDLE_IDENTIFIER = "net.comcast.home.seiryu.${PRODUCT_NAME:rfc1034identifier}";
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = "de.petermaurer.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SymbolicLinker;
 				WRAPPER_EXTENSION = service;
 			};
