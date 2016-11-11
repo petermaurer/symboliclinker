@@ -16,6 +16,6 @@
 #import <Cocoa/Cocoa.h>
 
 
-@interface SymbolicLinker : NSObject <NSApplicationDelegate>
+@interface SymbolicLinker: NSObject <NSApplicationDelegate>
 
 @end
