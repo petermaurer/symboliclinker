@@ -17,8 +17,5 @@
 
 
 @interface SLAppDelegate : NSObject <NSApplicationDelegate>
-{
-
-}
 
 @end

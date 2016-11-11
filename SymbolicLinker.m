@@ -17,15 +17,17 @@
 #include "SymbolicLinker.h"
 #include <stdio.h>
 #include <unistd.h>
+#include <Carbon/Carbon.h>
 #ifdef USE_COCOA
 #import <Cocoa/Cocoa.h>
 #else
 #include "MoreFinderEvents.h"
 #endif
 
+
 CF_INLINE CFBundleRef SLOurBundle(void)
 {
-	CFStringRef bundleCFStringRef = CFSTR("net.comcast.home.seiryu.SymbolicLinker");
+	CFStringRef bundleCFStringRef = CFSTR("de.petermaurer.SymbolicLinker");
 	return CFBundleGetBundleWithIdentifier(bundleCFStringRef);
 }
 
@@ -55,115 +57,46 @@ CF_INLINE bool SLIsEqualToString(CFStringRef theString1, CFStringRef theString2)
 #pragma clang diagnostic pop
 }
 
-
 void MakeSymbolicLinkToDesktop(CFURLRef url)
 {
-	CFURLRef desktopFolderURL, destinationURL;
-	CFStringRef fileName, fileNameWithSymlinkExtension;
-	char sourcePath[PATH_MAX], destinationPath[PATH_MAX];
-	int tries = 1;
-	
+	CFURLRef desktopFolderURL, symlinkURL;
+	CFStringRef sourceFilename, symlinkFilename;
+	char sourcePath[PATH_MAX], symlinkPath[PATH_MAX];
+
 	// Set up the destination path...
 	desktopFolderURL = CFBridgingRetain([[NSFileManager defaultManager] URLForDirectory:NSDesktopDirectory inDomain:NSUserDomainMask appropriateForURL:nil create:NO error:NULL]);
 	if (!desktopFolderURL)	// if, for some reason, we fail to locate the user's desktop folder, then I'd rather have us silently fail than crash
-		return;
-	fileName = CFURLCopyLastPathComponent(url);
-	if (SLIsEqualToString(fileName, CFSTR("/")))	// true if the user is making a symlink to the boot volume
 	{
-		CFRelease(fileName);
-		fileName = CFURLCopyFileSystemPath(url, kCFURLHFSPathStyle);	// use CoreFoundation to figure out the boot volume's name
+		return;
 	}
-	fileNameWithSymlinkExtension = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%@ symlink"), fileName);
-	destinationURL = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault, desktopFolderURL, fileNameWithSymlinkExtension, false);
-	CFURLGetFileSystemRepresentation(destinationURL, true, (UInt8 *)destinationPath, PATH_MAX);
+	sourceFilename = CFURLCopyLastPathComponent(url);
+	if (SLIsEqualToString(sourceFilename, CFSTR("/")))	// true if the user is making a symlink to the boot volume
+	{
+		CFRelease(sourceFilename);
+		sourceFilename = CFURLCopyFileSystemPath(url, kCFURLHFSPathStyle);	// use CoreFoundation to figure out the boot volume's name
+	}
+	symlinkFilename = CFRetain(sourceFilename);
+	symlinkURL = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault, desktopFolderURL, symlinkFilename, false);
+	CFURLGetFileSystemRepresentation(symlinkURL, true, (UInt8 *)symlinkPath, PATH_MAX);
 	CFURLGetFileSystemRepresentation(url, false, (UInt8 *)sourcePath, PATH_MAX);
 	
 	// Now we make the link.
-	while (tries < INT_MAX && symlink(sourcePath, destinationPath) != 0)
+	if (symlink(sourcePath, symlinkPath) != noErr)
 	{
-		if (errno == EEXIST)	// file aleady exists; try again with a different name
-		{
-			CFRelease(fileNameWithSymlinkExtension);
-			CFRelease(destinationURL);
-			fileNameWithSymlinkExtension = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFSTR("%@ symlink %d"), fileName, tries);
-			destinationURL = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault, desktopFolderURL, fileNameWithSymlinkExtension, false);
-			CFURLGetFileSystemRepresentation(destinationURL, true, (UInt8 *)destinationPath, PATH_MAX);
-			tries++;
-		}
-		else
-		{
-			CFStringRef CFMyerror = CFCopyLocalizedStringFromTableInBundle(CFSTR("Could not make the symbolic link, because the following error occurred: %d (%s)"), CFSTR("Localizable"), SLOurBundle(), "Error message");
+		CFStringRef CFMyerror = CFCopyLocalizedStringFromTableInBundle(CFSTR("Could not make the symbolic link, because the following error occurred: %d (%s)"), CFSTR("Localizable"), SLOurBundle(), "Error message");
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-			CFStringRef CFMyerrorFormatted = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFMyerror, errno, strerror(errno));
+		CFStringRef CFMyerrorFormatted = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFMyerror, errno, strerror(errno));
 #pragma clang diagnostic pop
-			SInt16 ignored;
-			
-			// An error occurred, so set up a standard alert box and run it...
-			StandardAlertCF(kAlertCautionAlert, CFMyerrorFormatted, NULL, NULL, &ignored);
-			CFRelease(CFMyerror);
-			CFRelease(CFMyerrorFormatted);
-		}
+		SInt16 ignored;
+		
+		// An error occurred, so set up a standard alert box and run it...
+		StandardAlertCF(kAlertCautionAlert, CFMyerrorFormatted, NULL, NULL, &ignored);
+		CFRelease(CFMyerror);
+		CFRelease(CFMyerrorFormatted);
 	}
 	CFRelease(desktopFolderURL);
-	CFRelease(fileName);
-	CFRelease(fileNameWithSymlinkExtension);
-	CFRelease(destinationURL);
-}
-
-
-// Here is where we make the symbolic link, given the path.
-void MakeSymbolicLink(CFURLRef url)
-{
-	CFURLRef urlNoPathComponent = CFURLCreateCopyDeletingLastPathComponent(kCFAllocatorDefault, url);
-	CFStringRef pathStringNoPathComponent = CFURLCopyFileSystemPath(urlNoPathComponent, kCFURLPOSIXPathStyle);
-	char destPath[PATH_MAX], originalDestPath[PATH_MAX], pathFolder[PATH_MAX];
-	int tries = 1;
-	
-	// First check to see if we're making a link to a disk.
-	if (SLIsEqualToString(pathStringNoPathComponent, CFSTR("/Volumes")) || SLIsEqualToString(pathStringNoPathComponent, CFSTR("")) || SLIsEqualToString(pathStringNoPathComponent, CFSTR("/..")) || SLIsEqualToString(pathStringNoPathComponent, CFSTR("/")))
-	{
-		MakeSymbolicLinkToDesktop(url);
-		goto done;	// clean up and exit the function
-	}
-	
-	CFURLGetFileSystemRepresentation(url, false, (UInt8 *)originalDestPath, PATH_MAX);
-	CFURLGetFileSystemRepresentation(urlNoPathComponent, false, (UInt8 *)pathFolder, PATH_MAX);
-	
-	// Set up the destination path...
-    snprintf(destPath, PATH_MAX, "%s symlink", originalDestPath);
-    
-    // Now we make the link.
-    while (tries != INT_MAX && symlink(originalDestPath, destPath) != 0)
-    {
-        if (errno == EACCES || errno == EROFS)
-        {
-            // We get to this point if it was a "permission denied" or "read-only" error.
-            // Let's try it again, but we'll make it on the desktop.
-            MakeSymbolicLinkToDesktop(url);
-        }
-		else if (errno == EEXIST)
-		{
-			// Something else already exists at this path. Try again with a new name, using the convention Apple uses in Finder.
-			snprintf(destPath, PATH_MAX, "%s symlink %d", originalDestPath, tries);
-			tries++;
-		}
-        else
-        {
-            CFStringRef CFMyerror = CFCopyLocalizedStringFromTableInBundle(CFSTR("Could not make the symbolic link, because the following error occurred: %d (%s)"), CFSTR("Localizable"), SLOurBundle(), "Error message");
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
-            CFStringRef CFMyerrorFormatted = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, CFMyerror, errno, strerror(errno));
-#pragma clang diagnostic pop
-            SInt16 ignored;
-			
-            // An error occurred, so set up a standard alert box and run it...
-            StandardAlertCF(kAlertCautionAlert, CFMyerrorFormatted, NULL, NULL, &ignored);
-			CFRelease(CFMyerror);
-            CFRelease(CFMyerrorFormatted);
-        }
-    }
-done:
-	CFRelease(urlNoPathComponent);
-	CFRelease(pathStringNoPathComponent);
+	CFRelease(sourceFilename);
+	CFRelease(symlinkFilename);
+	CFRelease(symlinkURL);
 }
