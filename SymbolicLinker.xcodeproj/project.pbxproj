@@ -10,9 +10,8 @@
 		B4DAA7761350418B00415B58 /* SymbolicLinkerService.icns in Resources */ = {isa = PBXBuildFile; fileRef = B4DAA7751350418B00415B58 /* SymbolicLinkerService.icns */; };
 		E0C9460510462EF300C4B20E /* ServicesMenu.strings in Resources */ = {isa = PBXBuildFile; fileRef = E0C9460410462EF300C4B20E /* ServicesMenu.strings */; };
 		E0E29B591041ED13001084AF /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = E0E29B581041ED13001084AF /* MainMenu.xib */; };
-		E0E29B5C1041ED34001084AF /* SLAppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = E0E29B5B1041ED34001084AF /* SLAppDelegate.m */; };
+		E0E29B5C1041ED34001084AF /* SymbolicLinker.m in Sources */ = {isa = PBXBuildFile; fileRef = E0E29B5B1041ED34001084AF /* SymbolicLinker.m */; };
 		E0E29B5E1041ED85001084AF /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E0E29B5D1041ED85001084AF /* Cocoa.framework */; };
-		E0E29B681041FAA4001084AF /* SymbolicLinker.m in Sources */ = {isa = PBXBuildFile; fileRef = E097F838060EB98E00B686E5 /* SymbolicLinker.m */; };
 		E0E29B701041FB54001084AF /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = E06E73120552083D007DB405 /* Localizable.strings */; };
 /* End PBXBuildFile section */
 
@@ -29,8 +28,6 @@
 		E085557F12217F6B00ACC9EF /* pt */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = pt; path = pt.lproj/ServicesMenu.strings; sourceTree = "<group>"; };
 		E0926ED710C8A85C005F5647 /* nl */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E0926ED910C8A86C005F5647 /* nl */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = nl; path = nl.lproj/ServicesMenu.strings; sourceTree = "<group>"; };
-		E097F837060EB98E00B686E5 /* SymbolicLinker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SymbolicLinker.h; sourceTree = "<group>"; };
-		E097F838060EB98E00B686E5 /* SymbolicLinker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SymbolicLinker.m; sourceTree = "<group>"; };
 		E0BC0AE713A5D42500034901 /* nb */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E0BC0AE813A5D42800034901 /* nn */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = nn; path = nn.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E0BC0AEB13A5D43A00034901 /* nb */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = nb; path = nb.lproj/ServicesMenu.strings; sourceTree = "<group>"; };
@@ -49,8 +46,8 @@
 		E0E29B4F1041EA5C001084AF /* SymbolicLinker.service */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SymbolicLinker.service; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E29B511041EA5C001084AF /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; path = Info.plist; sourceTree = "<group>"; };
 		E0E29B581041ED13001084AF /* MainMenu.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MainMenu.xib; sourceTree = "<group>"; };
-		E0E29B5A1041ED34001084AF /* SLAppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SLAppDelegate.h; sourceTree = "<group>"; };
-		E0E29B5B1041ED34001084AF /* SLAppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SLAppDelegate.m; sourceTree = "<group>"; };
+		E0E29B5A1041ED34001084AF /* SymbolicLinker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SymbolicLinker.h; sourceTree = "<group>"; };
+		E0E29B5B1041ED34001084AF /* SymbolicLinker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SymbolicLinker.m; sourceTree = "<group>"; };
 		E0E29B5D1041ED85001084AF /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -69,20 +66,21 @@
 		089C166AFE841209C02AAC07 /* SymbolicLinker */ = {
 			isa = PBXGroup;
 			children = (
-				08FB77AFFE84173DC02AAC07 /* Source */,
+				E0E29B5A1041ED34001084AF /* SymbolicLinker.h */,
+				E0E29B5B1041ED34001084AF /* SymbolicLinker.m */,
 				089C167CFE841241C02AAC07 /* Resources */,
-				089C1671FE841209C02AAC07 /* External Frameworks and Libraries */,
+				089C1671FE841209C02AAC07 /* Frameworks */,
 				19C28FB6FE9D52B211CA2CBB /* Products */,
 			);
 			name = SymbolicLinker;
 			sourceTree = "<group>";
 		};
-		089C1671FE841209C02AAC07 /* External Frameworks and Libraries */ = {
+		089C1671FE841209C02AAC07 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				E0E29B5D1041ED85001084AF /* Cocoa.framework */,
 			);
-			name = "External Frameworks and Libraries";
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		089C167CFE841241C02AAC07 /* Resources */ = {
@@ -95,17 +93,6 @@
 				E0C9460410462EF300C4B20E /* ServicesMenu.strings */,
 			);
 			name = Resources;
-			sourceTree = "<group>";
-		};
-		08FB77AFFE84173DC02AAC07 /* Source */ = {
-			isa = PBXGroup;
-			children = (
-				E0E29B5A1041ED34001084AF /* SLAppDelegate.h */,
-				E0E29B5B1041ED34001084AF /* SLAppDelegate.m */,
-				E097F837060EB98E00B686E5 /* SymbolicLinker.h */,
-				E097F838060EB98E00B686E5 /* SymbolicLinker.m */,
-			);
-			name = Source;
 			sourceTree = "<group>";
 		};
 		19C28FB6FE9D52B211CA2CBB /* Products */ = {
@@ -195,8 +182,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				E0E29B5C1041ED34001084AF /* SLAppDelegate.m in Sources */,
-				E0E29B681041FAA4001084AF /* SymbolicLinker.m in Sources */,
+				E0E29B5C1041ED34001084AF /* SymbolicLinker.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -274,10 +260,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(GCC_PREPROCESSOR_DEFINITIONS)",
-					USE_COCOA,
-				);
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.petermaurer.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SymbolicLinker;
@@ -290,10 +272,6 @@
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"$(GCC_PREPROCESSOR_DEFINITIONS)",
-					USE_COCOA,
-				);
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = "de.petermaurer.${PRODUCT_NAME:rfc1034identifier}";
 				PRODUCT_NAME = SymbolicLinker;
