@@ -16,7 +16,8 @@
 #import "SymbolicLinker.h"
 
 
-#define DESKTOP_TARGET_KEY @"SymbolicLinkerPrefersDesktop"
+#define USER_DEFAULT_IGNORE_MODIFIER_FLAGS @"SLIgnoreModifierFlags"
+#define USER_DEFAULT_PREFER_DESKTOP_TARGET @"SLPreferDesktopTarget"
 
 
 static void SLServicesMenuLocalizationDummy(void) {
@@ -96,7 +97,8 @@ static OSErr SLMakeSymbolicLink(const char *linkedPath, NSURL *targetURL, NSStri
 static void SLMakeSymbolicLinks(NSArray *fileURLs) {
 	NSURL *relativeSymlinkParentURL;
 	NSURL *desktopURL;
-	NSUInteger modifierFlags = [NSEvent modifierFlags];
+	NSUserDefaults *userDefaults = [NSUserDefaults standardUserDefaults];
+	NSUInteger modifierFlags = ([userDefaults boolForKey: USER_DEFAULT_IGNORE_MODIFIER_FLAGS] ? 0 : [NSEvent modifierFlags]);
 	if ((modifierFlags & NSControlKeyMask)==0) {
 		relativeSymlinkParentURL = nil;
 		desktopURL = [[NSFileManager defaultManager] URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
@@ -115,7 +117,7 @@ static void SLMakeSymbolicLinks(NSArray *fileURLs) {
 		relativeSymlinkParentURL = [openPanel URL];
 		desktopURL = nil;
 	}
-	BOOL makeSymlinksInParentFolder = ((!relativeSymlinkParentURL) && ((!desktopURL) || (((modifierFlags & NSAlternateKeyMask)==0) ^ [[NSUserDefaults standardUserDefaults] boolForKey: DESKTOP_TARGET_KEY])));
+	BOOL makeSymlinksInParentFolder = ((!relativeSymlinkParentURL) && ((!desktopURL) || (((modifierFlags & NSAlternateKeyMask)==0) ^ [userDefaults boolForKey: USER_DEFAULT_PREFER_DESKTOP_TARGET])));
 	NSMutableArray *fileViewerURLs = (makeSymlinksInParentFolder ? [NSMutableArray array] : nil);
 	for (NSURL *fileURL in fileURLs) {
 		OSErr result = EINVAL;
@@ -190,7 +192,7 @@ static void SLMakeSymbolicLinks(NSArray *fileURLs) {
 			[targetSwitch setButtonType: NSSwitchButton];
 			[[targetSwitch cell] setControlSize: NSControlSizeRegular];
 			[targetSwitch setFont: [NSFont systemFontOfSize: [NSFont systemFontSizeForControlSize: NSControlSizeRegular]]];
-			[targetSwitch setState: ([[NSUserDefaults standardUserDefaults] boolForKey: DESKTOP_TARGET_KEY] ? NSOnState : NSOffState)];
+			[targetSwitch setState: ([[NSUserDefaults standardUserDefaults] boolForKey: USER_DEFAULT_PREFER_DESKTOP_TARGET] ? NSOnState : NSOffState)];
 			[targetSwitch setTarget: self];
 			[targetSwitch setAction: @selector(toggleDesktopTarget:)];
 			[targetSwitch setTitle: NSLocalizedString(@"Create symbolic links on Desktop", @"Target Preference")];
@@ -215,7 +217,7 @@ static void SLMakeSymbolicLinks(NSArray *fileURLs) {
 	}
 
 	- (void)toggleDesktopTarget: (id)sender {
-		[[NSUserDefaults standardUserDefaults] setBool: ([sender state]==NSOnState) forKey: DESKTOP_TARGET_KEY];
+		[[NSUserDefaults standardUserDefaults] setBool: ([sender state]==NSOnState) forKey: USER_DEFAULT_PREFER_DESKTOP_TARGET];
 	}
 
 	- (void)applicationDidFinishLaunching: (NSNotification*)notification {
