@@ -16,50 +16,87 @@
 #import "SymbolicLinker.h"
 
 
-static void SLCreateSymbolicLinkOnDesktop(NSURL *sourceURL) {
-	if (sourceURL) {
-		@autoreleasepool {
-			NSFileManager *fileManager = [NSFileManager defaultManager];
-			NSURL *desktopFolderURL = [fileManager URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
-			if (desktopFolderURL) {
-				NSString *filename = [sourceURL lastPathComponent];
-				if ([filename isEqualToString: @"/"]) {
-					filename = [[fileManager componentsToDisplayForPath: filename] firstObject];
-				}
-				if ([filename length]>0) {
-					const char *sourcePath = [sourceURL fileSystemRepresentation];
-					const char *symlinkPath = [[desktopFolderURL URLByAppendingPathComponent: filename] fileSystemRepresentation];
-					if ((sourcePath) && (symlinkPath) && (symlink(sourcePath, symlinkPath)!=noErr)) {
-						[NSApp activateIgnoringOtherApps: YES];
-						NSAlert *theAlert = [[NSAlert alloc] init];
-						[theAlert setMessageText: [NSString stringWithFormat: NSLocalizedString(@"Could not make the symbolic link, because the following error occurred: %d (%s)", @"Error message"), errno, strerror(errno)]];
-						[theAlert runModal];
-						[theAlert release];
-					}
-				}
+static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name, BOOL appendSuffix) {
+	@autoreleasepool {
+		NSInteger attempt = (appendSuffix ? 0 : -1);
+		NSString *symlinkName;
+		const char *symlinkPath;
+		OSErr result;
+		do {
+			switch (attempt) {
+				case -1:
+					symlinkName = name;
+					break;
+				case 0:
+					symlinkName = [name stringByAppendingString: @" symlink"];
+					break;
+				default:
+					symlinkName = [NSString stringWithFormat: @"%@ symlink %ld", name, (long)attempt];
+					break;
 			}
-		}
+			symlinkPath = [[targetURL URLByAppendingPathComponent: symlinkName] fileSystemRepresentation];
+			if (!symlinkPath) {
+				return EINVAL;
+			}
+			if (symlink(sourcePath, symlinkPath)==0) {
+				return noErr;
+			}
+			if (errno!=EEXIST) {
+				return errno;
+			}
+			attempt++;
+		} while (attempt<NSIntegerMax);
 	}
+	return EEXIST;
 }
 
 
+@interface SymbolicLinker () <NSWindowDelegate>
+
+	@property (nonatomic, retain) NSWindow *preferencesWindow;
+
+@end
+
 @implementation SymbolicLinker
 
-	- (void)applicationDidFinishLaunching: (NSNotification*)notification {
-		NSUpdateDynamicServices();
-		[NSApp setServicesProvider: self];
-		[NSApp performSelector: @selector(showPreferences:) withObject: nil afterDelay: 1.0];
-	}
-
 	- (void)makeSymbolicLink: (NSPasteboard*)pasteboard userData: (NSString*)userData error: (NSString**)error {
+		NSFileManager *fileManager = [NSFileManager defaultManager];
+		NSURL *desktopURL = [fileManager URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
+		BOOL defaultToParent = ((!desktopURL) || (![[NSUserDefaults standardUserDefaults] boolForKey: @"Desktop"]));
+		void (^MakeSymbolicLink)(NSURL *) = ^(NSURL *sourceURL) {
+			OSErr result = EINVAL;
+			const char *sourcePath = [sourceURL fileSystemRepresentation];
+			if (sourcePath) {
+				NSString *name = [sourceURL lastPathComponent];
+				if ([name isEqualToString: @"/"]) {
+					name = [[fileManager componentsToDisplayForPath: [sourceURL path]] firstObject];
+				}
+				if ([name length]>0) {
+					NSURL *parentURL = [sourceURL URLByDeletingLastPathComponent];
+					if (defaultToParent && (parentURL)) {
+						result = SLSymlink(sourcePath, parentURL, name, YES);
+					}
+					if ((result!=noErr) && (desktopURL)) {
+						result = SLSymlink(sourcePath, desktopURL, name, [parentURL isEqual: desktopURL]);
+					}
+				}
+			}
+			if (result!=noErr) {
+				[NSApp activateIgnoringOtherApps: YES];
+				NSAlert *alert = [[NSAlert alloc] init];
+				[alert setMessageText: [NSString stringWithFormat: NSLocalizedString(@"Could not make the symbolic link, because the following error occurred: %d (%s)", @"Error message"), result, strerror(result)]];
+				[alert runModal];
+				[alert release];
+			}
+		};
 		NSArray *fileURLs = [pasteboard readObjectsForClasses: @[[NSURL class]] options: @{NSPasteboardURLReadingFileURLsOnlyKey: @YES}];
 		if ([fileURLs count]>0) {
 			for (NSURL *fileURL in fileURLs) {
-				SLCreateSymbolicLinkOnDesktop(fileURL);
+				MakeSymbolicLink(fileURL);
 			}
 		} else {
 			for (NSString *path in [pasteboard propertyListForType: NSFilenamesPboardType]) {
-				SLCreateSymbolicLinkOnDesktop([NSURL fileURLWithPath: path]);	// backward compatibility for when public.url doesn't work, but NSFilenamesPboardType does
+				MakeSymbolicLink([NSURL fileURLWithPath: path]);	// backward compatibility for when public.url doesn't work, but NSFilenamesPboardType does
 			}
 		}
 		if (![self.preferencesWindow isVisible]) {
@@ -70,6 +107,12 @@ static void SLCreateSymbolicLinkOnDesktop(NSURL *sourceURL) {
 
 	- (void)showPreferences: (id)sender {
 		[NSApp terminate: nil];	// to do: show preferences window instead of terminating
+	}
+
+	- (void)applicationDidFinishLaunching: (NSNotification*)notification {
+		NSUpdateDynamicServices();
+		[NSApp setServicesProvider: self];
+		[self performSelector: @selector(showPreferences:) withObject: nil afterDelay: 1.0];
 	}
 
 	- (void)windowWillClose: (NSNotification*)notification {
