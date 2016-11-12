@@ -15,9 +15,9 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "E0E29B4E1041EA5C001084AF"
-               BuildableName = "SymbolicLinker.service"
-               BlueprintName = "SymbolicLinker-Service"
-               ReferencedContainer = "container:SymbolicLinker.xcodeproj">
+               BuildableName = "Symbolic Linker.service"
+               BlueprintName = "SymbolicLinker"
+               ReferencedContainer = "container:SymbolicLinker.xcode">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -33,8 +33,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E0E29B4E1041EA5C001084AF"
-            BuildableName = "SymbolicLinker.service"
-            BlueprintName = "SymbolicLinker-Service"
+            BuildableName = "Symbolic Linker.service"
+            BlueprintName = "SymbolicLinker"
             ReferencedContainer = "container:SymbolicLinker.xcode">
          </BuildableReference>
       </MacroExpansion>
@@ -56,8 +56,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E0E29B4E1041EA5C001084AF"
-            BuildableName = "SymbolicLinker.service"
-            BlueprintName = "SymbolicLinker-Service"
+            BuildableName = "Symbolic Linker.service"
+            BlueprintName = "SymbolicLinker"
             ReferencedContainer = "container:SymbolicLinker.xcode">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -70,16 +70,15 @@
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
       debugDocumentVersioning = "YES">
-      <BuildableProductRunnable
-         runnableDebuggingMode = "0">
+      <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "E0E29B4E1041EA5C001084AF"
-            BuildableName = "SymbolicLinker.service"
-            BlueprintName = "SymbolicLinker-Service"
-            ReferencedContainer = "container:SymbolicLinker.xcodeproj">
+            BuildableName = "Symbolic Linker.service"
+            BlueprintName = "SymbolicLinker"
+            ReferencedContainer = "container:SymbolicLinker.xcode">
          </BuildableReference>
-      </BuildableProductRunnable>
+      </MacroExpansion>
    </ProfileAction>
    <AnalyzeAction
       buildConfiguration = "Debug">
