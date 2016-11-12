@@ -127,16 +127,19 @@ static void SLMakeSymlinks(NSArray *fileURLs) {
 		}
 		if ([name length]>0) {
 			if (relativeSymlinkParentURL) {
-				result = SLMakeSymlink([SLRelativeFileURLPath(relativeSymlinkParentURL, fileURL) fileSystemRepresentation], relativeSymlinkParentURL, name, NO, fileViewerURLs);
+				const char *relativeLinkedPath = [SLRelativeFileURLPath(relativeSymlinkParentURL, fileURL) fileSystemRepresentation];
+				if (relativeLinkedPath) {
+					result = SLMakeSymlink(relativeLinkedPath, relativeSymlinkParentURL, name, NO, fileViewerURLs);
+				}
 			} else {
-				const char *linkedPath = [fileURL fileSystemRepresentation];
-				if (linkedPath) {
+				const char *absoluteLinkedPath = [fileURL fileSystemRepresentation];
+				if (absoluteLinkedPath) {
 					NSURL *parentURL = [fileURL URLByDeletingLastPathComponent];
 					if (makeSymlinksInParentFolder && (parentURL)) {
-						result = SLMakeSymlink(linkedPath, parentURL, name, YES, fileViewerURLs);
+						result = SLMakeSymlink(absoluteLinkedPath, parentURL, name, YES, fileViewerURLs);
 					}
 					if ((result!=noErr) && (desktopURL)) {
-						result = SLMakeSymlink(linkedPath, desktopURL, name, [parentURL isEqual: desktopURL], fileViewerURLs);
+						result = SLMakeSymlink(absoluteLinkedPath, desktopURL, name, [parentURL isEqual: desktopURL], fileViewerURLs);
 					}
 				}
 			}
