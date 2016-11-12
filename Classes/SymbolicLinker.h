@@ -16,6 +16,8 @@
 #import <Cocoa/Cocoa.h>
 
 
-@interface SymbolicLinker: NSObject <NSApplicationDelegate>
+@interface SymbolicLinker: NSObject <NSApplicationDelegate, NSWindowDelegate>
+
+	@property (nonatomic, retain) IBOutlet NSWindow *preferencesWindow;
 
 @end

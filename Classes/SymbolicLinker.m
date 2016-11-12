@@ -16,32 +16,28 @@
 #import "SymbolicLinker.h"
 
 
-static void SLCreateSymbolicLinkOnDesktop(CFURLRef sourceURL) {
+static void SLCreateSymbolicLinkOnDesktop(NSURL *sourceURL) {
 	if (sourceURL) {
-		CFURLRef desktopFolderURL = CFBridgingRetain([[NSFileManager defaultManager] URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL]);
-		if (desktopFolderURL) {
-			CFStringRef filename = CFURLCopyLastPathComponent(sourceURL);
-			if (CFStringCompare(filename, CFSTR("/"), kCFCompareCaseInsensitive)==kCFCompareEqualTo) {
-				CFRelease(filename);
-				filename = CFURLCopyFileSystemPath(sourceURL, kCFURLHFSPathStyle);	// use volume name
+		@autoreleasepool {
+			NSFileManager *fileManager = [NSFileManager defaultManager];
+			NSURL *desktopFolderURL = [fileManager URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
+			if (desktopFolderURL) {
+				NSString *filename = [sourceURL lastPathComponent];
+				if ([filename isEqualToString: @"/"]) {
+					filename = [[fileManager componentsToDisplayForPath: filename] firstObject];
+				}
+				if ([filename length]>0) {
+					const char *sourcePath = [sourceURL fileSystemRepresentation];
+					const char *symlinkPath = [[desktopFolderURL URLByAppendingPathComponent: filename] fileSystemRepresentation];
+					if ((sourcePath) && (symlinkPath) && (symlink(sourcePath, symlinkPath)!=noErr)) {
+						[NSApp activateIgnoringOtherApps: YES];
+						NSAlert *theAlert = [[NSAlert alloc] init];
+						[theAlert setMessageText: [NSString stringWithFormat: NSLocalizedString(@"Could not make the symbolic link, because the following error occurred: %d (%s)", @"Error message"), errno, strerror(errno)]];
+						[theAlert runModal];
+						[theAlert release];
+					}
+				}
 			}
-			CFURLRef symlinkURL = CFURLCreateCopyAppendingPathComponent(kCFAllocatorDefault, desktopFolderURL, filename, false);
-			char sourcePath[PATH_MAX], symlinkPath[PATH_MAX];
-			CFURLGetFileSystemRepresentation(sourceURL, false, (UInt8*)sourcePath, PATH_MAX);
-			CFURLGetFileSystemRepresentation(symlinkURL, true, (UInt8*)symlinkPath, PATH_MAX);
-			if (symlink(sourcePath, symlinkPath)!=noErr) {
-				CFStringRef errorFormat = CFCopyLocalizedStringFromTableInBundle(CFSTR("Could not make the symbolic link, because the following error occurred: %d (%s)"), CFSTR("Localizable"), CFBundleGetMainBundle(), "Error message");
-				#pragma clang diagnostic push
-				#pragma clang diagnostic ignored "-Wformat-nonliteral"
-				CFStringRef errorMessage = CFStringCreateWithFormat(kCFAllocatorDefault, NULL, errorFormat, errno, strerror(errno), NULL, NULL);
-				#pragma clang diagnostic pop
-				CFUserNotificationDisplayAlert(0.0, kCFUserNotificationPlainAlertLevel, NULL, NULL, NULL, errorMessage, NULL, NULL, NULL, NULL, NULL);
-				CFRelease(errorMessage);
-				CFRelease(errorFormat);
-			}
-			CFRelease(symlinkURL);
-			CFRelease(filename);
-			CFRelease(desktopFolderURL);
 		}
 	}
 }
@@ -52,20 +48,39 @@ static void SLCreateSymbolicLinkOnDesktop(CFURLRef sourceURL) {
 	- (void)applicationDidFinishLaunching: (NSNotification*)notification {
 		NSUpdateDynamicServices();
 		[NSApp setServicesProvider: self];
-		[NSApp performSelector: @selector(terminate:) withObject: nil afterDelay: 5.0];
+		[NSApp performSelector: @selector(showPreferences:) withObject: nil afterDelay: 1.0];
 	}
 
-	- (void)makeSymbolicLink: (NSPasteboard*)pasteboard userData: (NSString*)userData error: (NSString*__autoreleasing*)error {
+	- (void)makeSymbolicLink: (NSPasteboard*)pasteboard userData: (NSString*)userData error: (NSString**)error {
 		NSArray *fileURLs = [pasteboard readObjectsForClasses: @[[NSURL class]] options: @{NSPasteboardURLReadingFileURLsOnlyKey: @YES}];
 		if ([fileURLs count]>0) {
 			for (NSURL *fileURL in fileURLs) {
-				SLCreateSymbolicLinkOnDesktop((__bridge CFURLRef)fileURL);
+				SLCreateSymbolicLinkOnDesktop(fileURL);
 			}
 		} else {
 			for (NSString *path in [pasteboard propertyListForType: NSFilenamesPboardType]) {
-				SLCreateSymbolicLinkOnDesktop((__bridge CFURLRef)[NSURL fileURLWithPath: path]);	// backward compatibility for when public.url doesn't work, but NSFilenamesPboardType does
+				SLCreateSymbolicLinkOnDesktop([NSURL fileURLWithPath: path]);	// backward compatibility for when public.url doesn't work, but NSFilenamesPboardType does
 			}
 		}
+		if (![self.preferencesWindow isVisible]) {
+			[NSObject cancelPreviousPerformRequestsWithTarget: self];
+			[NSApp terminate: nil];
+		}
+	}
+
+	- (void)showPreferences: (id)sender {
+		[NSApp terminate: nil];	// to do: show preferences window instead of terminating
+	}
+
+	- (void)windowWillClose: (NSNotification*)notification {
+		if ([notification object]==self.preferencesWindow) {
+			[NSApp terminate: nil];
+		}
+	}
+
+	- (void)dealloc {
+		[_preferencesWindow release];
+		[super dealloc];
 	}
 
 @end

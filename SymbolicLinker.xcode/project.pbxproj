@@ -43,7 +43,7 @@
 		E0C9460E10462F1900C4B20E /* fi */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/ServicesMenu.strings; sourceTree = "<group>"; };
 		E0D17B270A12BC0E00D3E393 /* fi */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = fi; path = fi.lproj/Localizable.strings; sourceTree = "<group>"; };
 		E0D9390008EA2487005CF3DC /* it */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
-		E0E29B4F1041EA5C001084AF /* SymbolicLinker.service */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SymbolicLinker.service; sourceTree = BUILT_PRODUCTS_DIR; };
+		E0E29B4F1041EA5C001084AF /* SymbolicLinker.service */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = SymbolicLinker.service; path = "Symbolic Linker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E29B511041EA5C001084AF /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		E0E29B581041ED13001084AF /* Main.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Main.xib; path = Resources/Main.xib; sourceTree = "<group>"; };
 		E0E29B5A1041ED34001084AF /* SymbolicLinker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SymbolicLinker.h; path = Classes/SymbolicLinker.h; sourceTree = "<group>"; };
@@ -249,7 +249,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Resources/Info.plist;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_BUNDLE_IDENTIFIER = de.petermaurer.SymbolicLinker;
 				PRODUCT_NAME = "Symbolic Linker";
 			};
@@ -261,7 +261,7 @@
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				INFOPLIST_FILE = Resources/Info.plist;
-				MACOSX_DEPLOYMENT_TARGET = 10.7;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
 				PRODUCT_BUNDLE_IDENTIFIER = de.petermaurer.SymbolicLinker;
 				PRODUCT_NAME = "Symbolic Linker";
 			};
