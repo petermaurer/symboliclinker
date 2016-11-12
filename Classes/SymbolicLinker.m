@@ -56,6 +56,10 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 	return EEXIST;
 }
 
+static void SLServicesMenuLocalizationDummy(void) {
+	NSLocalizedStringFromTable(@"Make Symbolic Link", @"ServicesMenu", @"Service Menu Item Title");	// => genstrings
+}
+
 
 @interface SymbolicLinker () <NSWindowDelegate>
 
@@ -102,7 +106,7 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 			}
 		} else {
 			for (NSString *path in [pasteboard propertyListForType: NSFilenamesPboardType]) {
-				MakeSymbolicLink([NSURL fileURLWithPath: path]);	// backward compatibility for when public.url doesn't work, but NSFilenamesPboardType does
+				MakeSymbolicLink([NSURL fileURLWithPath: path]);	// fallback for when public.url doesn't work, but NSFilenamesPboardType does
 			}
 		}
 		if ([symlinkURLs count]>0) {
