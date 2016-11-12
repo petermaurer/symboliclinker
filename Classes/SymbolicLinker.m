@@ -96,7 +96,8 @@ static OSErr SLMakeSymbolicLink(const char *linkedPath, NSURL *targetURL, NSStri
 static void SLMakeSymbolicLinks(NSArray *fileURLs) {
 	NSURL *relativeSymlinkParentURL;
 	NSURL *desktopURL;
-	if (([NSEvent modifierFlags] & NSCommandKeyMask)==0) {
+	NSUInteger modifierFlags = [NSEvent modifierFlags];
+	if ((modifierFlags & NSControlKeyMask)==0) {
 		relativeSymlinkParentURL = nil;
 		desktopURL = [[NSFileManager defaultManager] URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
 	} else {
@@ -114,7 +115,7 @@ static void SLMakeSymbolicLinks(NSArray *fileURLs) {
 		relativeSymlinkParentURL = [openPanel URL];
 		desktopURL = nil;
 	}
-	BOOL makeSymlinksInParentFolder = ((!relativeSymlinkParentURL) && ((!desktopURL) || (![[NSUserDefaults standardUserDefaults] boolForKey: DESKTOP_TARGET_KEY])));
+	BOOL makeSymlinksInParentFolder = ((!relativeSymlinkParentURL) && ((!desktopURL) || (((modifierFlags & NSAlternateKeyMask)==0) ^ [[NSUserDefaults standardUserDefaults] boolForKey: DESKTOP_TARGET_KEY])));
 	NSMutableArray *fileViewerURLs = (makeSymlinksInParentFolder ? [NSMutableArray array] : nil);
 	for (NSURL *fileURL in fileURLs) {
 		OSErr result = EINVAL;
