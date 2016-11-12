@@ -32,10 +32,10 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 					symlinkName = name;
 					break;
 				case 0:
-					symlinkName = [name stringByAppendingString: @" symlink"];
+					symlinkName = [name stringByAppendingString: @" Symlink"];
 					break;
 				default:
-					symlinkName = [NSString stringWithFormat: @"%@ symlink %ld", name, (long)attempt];
+					symlinkName = [NSString stringWithFormat: @"%@ Symlink %ld", name, (long)attempt];
 					break;
 			}
 			symlinkURL = [targetURL URLByAppendingPathComponent: symlinkName];
