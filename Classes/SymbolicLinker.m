@@ -19,10 +19,11 @@
 #define DESKTOP_TARGET_KEY @"SymbolicLinkerPrefersDesktop"
 
 
-static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name, BOOL appendSuffix) {
+static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name, BOOL appendSuffix, NSMutableArray *symlinkURLs) {
 	@autoreleasepool {
 		NSInteger attempt = (appendSuffix ? 0 : -1);
 		NSString *symlinkName;
+		NSURL *symlinkURL;
 		const char *symlinkPath;
 		OSErr result;
 		do {
@@ -37,11 +38,13 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 					symlinkName = [NSString stringWithFormat: @"%@ symlink %ld", name, (long)attempt];
 					break;
 			}
-			symlinkPath = [[targetURL URLByAppendingPathComponent: symlinkName] fileSystemRepresentation];
+			symlinkURL = [targetURL URLByAppendingPathComponent: symlinkName];
+			symlinkPath = [symlinkURL fileSystemRepresentation];
 			if (!symlinkPath) {
 				return EINVAL;
 			}
 			if (symlink(sourcePath, symlinkPath)==0) {
+				[symlinkURLs addObject: symlinkURL];
 				return noErr;
 			}
 			if (errno!=EEXIST) {
@@ -66,6 +69,7 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 		NSFileManager *fileManager = [NSFileManager defaultManager];
 		NSURL *desktopURL = [fileManager URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
 		BOOL defaultToParent = ((!desktopURL) || (![[NSUserDefaults standardUserDefaults] boolForKey: DESKTOP_TARGET_KEY]));
+		NSMutableArray *symlinkURLs = (defaultToParent ? [NSMutableArray array] : nil);
 		void (^MakeSymbolicLink)(NSURL *) = ^(NSURL *sourceURL) {
 			OSErr result = EINVAL;
 			const char *sourcePath = [sourceURL fileSystemRepresentation];
@@ -77,10 +81,10 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 				if ([name length]>0) {
 					NSURL *parentURL = [sourceURL URLByDeletingLastPathComponent];
 					if (defaultToParent && (parentURL)) {
-						result = SLSymlink(sourcePath, parentURL, name, YES);
+						result = SLSymlink(sourcePath, parentURL, name, YES, symlinkURLs);
 					}
 					if ((result!=noErr) && (desktopURL)) {
-						result = SLSymlink(sourcePath, desktopURL, name, [parentURL isEqual: desktopURL]);
+						result = SLSymlink(sourcePath, desktopURL, name, [parentURL isEqual: desktopURL], symlinkURLs);
 					}
 				}
 			}
@@ -100,6 +104,9 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 			for (NSString *path in [pasteboard propertyListForType: NSFilenamesPboardType]) {
 				MakeSymbolicLink([NSURL fileURLWithPath: path]);	// backward compatibility for when public.url doesn't work, but NSFilenamesPboardType does
 			}
+		}
+		if ([symlinkURLs count]>0) {
+			[[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs: symlinkURLs];
 		}
 		if (![self.preferencesWindow isVisible]) {
 			[NSObject cancelPreviousPerformRequestsWithTarget: self];
