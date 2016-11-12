@@ -19,14 +19,51 @@
 #define DESKTOP_TARGET_KEY @"SymbolicLinkerPrefersDesktop"
 
 
-static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name, BOOL appendSuffix, NSMutableArray *symlinkURLs) {
+static void SLServicesMenuLocalizationDummy(void) {
+	NSLocalizedStringFromTable(@"Make Symbolic Link", @"ServicesMenu", @"Service Menu Item Title");	// => genstrings
+}
+
+static NSString *SLRelativeFileURLPath(NSURL *baseURL, NSURL *targetURL) {
+	NSString *relativePath = nil;
+	@autoreleasepool {
+		NSArray *basePathComponents = [baseURL pathComponents];
+		NSArray *targetPathComponents = [targetURL pathComponents];
+		NSUInteger numberOfBasePathComponents = [basePathComponents count];
+		NSUInteger numberOfTargetPathComponents = [targetPathComponents count];
+		if ((numberOfBasePathComponents>0) && (numberOfTargetPathComponents>0)) {
+			NSUInteger numberOfCommonPathComponents = ((numberOfBasePathComponents<numberOfTargetPathComponents) ? numberOfBasePathComponents : numberOfTargetPathComponents);
+			NSUInteger index;
+			for (index = 0; index<numberOfCommonPathComponents; index++) {
+				if (![[basePathComponents objectAtIndex: index] isEqualToString: [targetPathComponents objectAtIndex: index]]) {
+					numberOfCommonPathComponents = index;
+					break;
+				}
+			}
+			if (numberOfCommonPathComponents>0) {
+				NSMutableArray *relativePathComponents = [NSMutableArray array];
+				numberOfBasePathComponents -= numberOfCommonPathComponents;
+				for (index = 0; index<numberOfBasePathComponents; index++) {
+					[relativePathComponents addObject: @".."];
+				}
+				if (numberOfCommonPathComponents==numberOfTargetPathComponents) {
+					if (numberOfBasePathComponents==0) {
+						[relativePathComponents addObject: @"."];
+					}
+				} else {
+					[relativePathComponents addObjectsFromArray: [targetPathComponents subarrayWithRange: NSMakeRange(numberOfCommonPathComponents, numberOfTargetPathComponents - numberOfCommonPathComponents)]];
+				}
+				relativePath = [[NSString pathWithComponents: relativePathComponents] retain];
+			}
+		}
+	}
+	return [relativePath autorelease];
+}
+
+static OSErr SLMakeSymbolicLink(const char *linkedPath, NSURL *targetURL, NSString *name, BOOL appendSuffix, NSMutableArray *symlinkURLs) {
 	@autoreleasepool {
 		NSInteger attempt = (appendSuffix ? 0 : -1);
-		NSString *symlinkName;
-		NSURL *symlinkURL;
-		const char *symlinkPath;
-		OSErr result;
 		do {
+			NSString *symlinkName;
 			switch (attempt) {
 				case -1:
 					symlinkName = name;
@@ -38,12 +75,12 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 					symlinkName = [NSString stringWithFormat: @"%@ Symlink %ld", name, (long)attempt];
 					break;
 			}
-			symlinkURL = [targetURL URLByAppendingPathComponent: symlinkName];
-			symlinkPath = [symlinkURL fileSystemRepresentation];
+			NSURL *symlinkURL = [targetURL URLByAppendingPathComponent: symlinkName];
+			const char *symlinkPath = [symlinkURL fileSystemRepresentation];
 			if (!symlinkPath) {
 				return EINVAL;
 			}
-			if (symlink(sourcePath, symlinkPath)==0) {
+			if (symlink(linkedPath, symlinkPath)==0) {
 				[symlinkURLs addObject: symlinkURL];
 				return noErr;
 			}
@@ -56,8 +93,62 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 	return EEXIST;
 }
 
-static void SLServicesMenuLocalizationDummy(void) {
-	NSLocalizedStringFromTable(@"Make Symbolic Link", @"ServicesMenu", @"Service Menu Item Title");	// => genstrings
+static void SLMakeSymbolicLinks(NSArray *fileURLs) {
+	NSURL *relativeSymlinkParentURL;
+	NSURL *desktopURL;
+	if (([NSEvent modifierFlags] & NSAlternateKeyMask)==0) {
+		relativeSymlinkParentURL = nil;
+		desktopURL = [[NSFileManager defaultManager] URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
+	} else {
+		NSString *prompt = (([fileURLs count]==1) ? NSLocalizedString(@"Make Relative Symbolic Link", @"Relative Symbolic Link Prompt (Single File)") : NSLocalizedString(@"Make Relative Symbolic Links", @"Relative Symbolic Link Prompt (Multiple Files)"));
+		NSOpenPanel *openPanel = [NSOpenPanel openPanel];
+		[openPanel setTitle: prompt];
+		[openPanel setPrompt: prompt];
+		[openPanel setCanChooseFiles: NO];
+		[openPanel setCanChooseDirectories: YES];
+		[openPanel setAllowsMultipleSelection: NO];
+		[openPanel setCanCreateDirectories: YES];
+		if ([openPanel runModal]!=NSFileHandlingPanelOKButton) {
+			return;
+		}
+		relativeSymlinkParentURL = [openPanel URL];
+		desktopURL = nil;
+	}
+	BOOL makeSymlinksInParentFolder = ((!relativeSymlinkParentURL) && ((!desktopURL) || (![[NSUserDefaults standardUserDefaults] boolForKey: DESKTOP_TARGET_KEY])));
+	NSMutableArray *fileViewerURLs = (makeSymlinksInParentFolder ? [NSMutableArray array] : nil);
+	for (NSURL *fileURL in fileURLs) {
+		OSErr result = EINVAL;
+		NSString *name = [fileURL lastPathComponent];
+		if ([name isEqualToString: @"/"]) {
+			name = [[[NSFileManager defaultManager] componentsToDisplayForPath: [fileURL path]] firstObject];
+		}
+		if ([name length]>0) {
+			if (relativeSymlinkParentURL) {
+				result = SLMakeSymbolicLink([SLRelativeFileURLPath(relativeSymlinkParentURL, fileURL) fileSystemRepresentation], relativeSymlinkParentURL, name, NO, fileViewerURLs);
+			} else {
+				const char *linkedPath = [fileURL fileSystemRepresentation];
+				if (linkedPath) {
+					NSURL *parentURL = [fileURL URLByDeletingLastPathComponent];
+					if (makeSymlinksInParentFolder && (parentURL)) {
+						result = SLMakeSymbolicLink(linkedPath, parentURL, name, YES, fileViewerURLs);
+					}
+					if ((result!=noErr) && (desktopURL)) {
+						result = SLMakeSymbolicLink(linkedPath, desktopURL, name, [parentURL isEqual: desktopURL], fileViewerURLs);
+					}
+				}
+			}
+		}
+		if (result!=noErr) {
+			NSAlert *alert = [[NSAlert alloc] init];
+			[alert setMessageText: [NSString stringWithFormat: NSLocalizedString(@"Could not make the symbolic link, because the following error occurred: %d (%s)", @"Error Message"), result, strerror(result)]];
+			[alert runModal];
+			[alert release];
+			break;
+		}
+	}
+	if ([fileViewerURLs count]>0) {
+		[[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs: fileViewerURLs];
+	}
 }
 
 
@@ -70,47 +161,20 @@ static void SLServicesMenuLocalizationDummy(void) {
 @implementation SymbolicLinker
 
 	- (void)makeSymbolicLink: (NSPasteboard*)pasteboard userData: (NSString*)userData error: (NSString**)error {
-		NSFileManager *fileManager = [NSFileManager defaultManager];
-		NSURL *desktopURL = [fileManager URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
-		BOOL defaultToParent = ((!desktopURL) || (![[NSUserDefaults standardUserDefaults] boolForKey: DESKTOP_TARGET_KEY]));
-		NSMutableArray *symlinkURLs = (defaultToParent ? [NSMutableArray array] : nil);
-		void (^MakeSymbolicLink)(NSURL *) = ^(NSURL *sourceURL) {
-			OSErr result = EINVAL;
-			const char *sourcePath = [sourceURL fileSystemRepresentation];
-			if (sourcePath) {
-				NSString *name = [sourceURL lastPathComponent];
-				if ([name isEqualToString: @"/"]) {
-					name = [[fileManager componentsToDisplayForPath: [sourceURL path]] firstObject];
-				}
-				if ([name length]>0) {
-					NSURL *parentURL = [sourceURL URLByDeletingLastPathComponent];
-					if (defaultToParent && (parentURL)) {
-						result = SLSymlink(sourcePath, parentURL, name, YES, symlinkURLs);
-					}
-					if ((result!=noErr) && (desktopURL)) {
-						result = SLSymlink(sourcePath, desktopURL, name, [parentURL isEqual: desktopURL], symlinkURLs);
-					}
-				}
-			}
-			if (result!=noErr) {
-				NSAlert *alert = [[NSAlert alloc] init];
-				[alert setMessageText: [NSString stringWithFormat: NSLocalizedString(@"Could not make the symbolic link, because the following error occurred: %d (%s)", @"Error Message"), result, strerror(result)]];
-				[alert runModal];
-				[alert release];
-			}
-		};
 		NSArray *fileURLs = [pasteboard readObjectsForClasses: @[[NSURL class]] options: @{NSPasteboardURLReadingFileURLsOnlyKey: @YES}];
 		if ([fileURLs count]>0) {
-			for (NSURL *fileURL in fileURLs) {
-				MakeSymbolicLink(fileURL);
-			}
+			SLMakeSymbolicLinks(fileURLs);
 		} else {
+			NSMutableArray *fallbackFileURLs = [NSMutableArray array];
 			for (NSString *path in [pasteboard propertyListForType: NSFilenamesPboardType]) {
-				MakeSymbolicLink([NSURL fileURLWithPath: path]);	// fallback for when public.url doesn't work, but NSFilenamesPboardType does
+				[fallbackFileURLs addObject: [NSURL fileURLWithPath: path]];
 			}
-		}
-		if ([symlinkURLs count]>0) {
-			[[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs: symlinkURLs];
+			if ([fallbackFileURLs count]>0) {
+				SLMakeSymbolicLinks(fallbackFileURLs);
+			} else {
+				NSLog(@"cannot read files from pasteboard");
+				NSBeep();
+			}
 		}
 		if (![self.preferencesWindow isVisible]) {
 			[NSObject cancelPreviousPerformRequestsWithTarget: self];
