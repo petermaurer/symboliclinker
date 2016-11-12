@@ -26,8 +26,6 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="236"/>
-                            <menuItem title="Preferences…" keyEquivalent="," id="129"/>
-                            <menuItem isSeparatorItem="YES" id="143"/>
                             <menuItem title="Services" id="131">
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <menu key="submenu" title="Services" systemMenu="services" id="130"/>
@@ -285,6 +283,11 @@
                                 <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="performZoom:" target="-1" id="240"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Close" keyEquivalent="w" id="l4J-np-mF0">
+                                <connections>
+                                    <action selector="close:" target="-1" id="Mi3-19-a9K"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="92"/>

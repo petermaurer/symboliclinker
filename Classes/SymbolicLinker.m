@@ -16,6 +16,9 @@
 #import "SymbolicLinker.h"
 
 
+#define DESKTOP_TARGET_KEY @"SymbolicLinkerPrefersDesktop"
+
+
 static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name, BOOL appendSuffix) {
 	@autoreleasepool {
 		NSInteger attempt = (appendSuffix ? 0 : -1);
@@ -62,7 +65,7 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 	- (void)makeSymbolicLink: (NSPasteboard*)pasteboard userData: (NSString*)userData error: (NSString**)error {
 		NSFileManager *fileManager = [NSFileManager defaultManager];
 		NSURL *desktopURL = [fileManager URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
-		BOOL defaultToParent = ((!desktopURL) || (![[NSUserDefaults standardUserDefaults] boolForKey: @"Desktop"]));
+		BOOL defaultToParent = ((!desktopURL) || (![[NSUserDefaults standardUserDefaults] boolForKey: DESKTOP_TARGET_KEY]));
 		void (^MakeSymbolicLink)(NSURL *) = ^(NSURL *sourceURL) {
 			OSErr result = EINVAL;
 			const char *sourcePath = [sourceURL fileSystemRepresentation];
@@ -82,9 +85,8 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 				}
 			}
 			if (result!=noErr) {
-				[NSApp activateIgnoringOtherApps: YES];
 				NSAlert *alert = [[NSAlert alloc] init];
-				[alert setMessageText: [NSString stringWithFormat: NSLocalizedString(@"Could not make the symbolic link, because the following error occurred: %d (%s)", @"Error message"), result, strerror(result)]];
+				[alert setMessageText: [NSString stringWithFormat: NSLocalizedString(@"Could not make the symbolic link, because the following error occurred: %d (%s)", @"Error Message"), result, strerror(result)]];
 				[alert runModal];
 				[alert release];
 			}
@@ -106,7 +108,38 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 	}
 
 	- (void)showPreferences: (id)sender {
-		[NSApp terminate: nil];	// to do: show preferences window instead of terminating
+		NSWindow *preferencesWindow = self.preferencesWindow;
+		if (!preferencesWindow) {
+			NSButton *targetSwitch = [[NSButton alloc] initWithFrame: NSZeroRect];
+			[targetSwitch setButtonType: NSSwitchButton];
+			[[targetSwitch cell] setControlSize: NSControlSizeRegular];
+			[targetSwitch setFont: [NSFont systemFontOfSize: [NSFont systemFontSizeForControlSize: NSControlSizeRegular]]];
+			[targetSwitch setState: ([[NSUserDefaults standardUserDefaults] boolForKey: DESKTOP_TARGET_KEY] ? NSOnState : NSOffState)];
+			[targetSwitch setTarget: self];
+			[targetSwitch setAction: @selector(toggleDesktopTarget:)];
+			[targetSwitch setTitle: NSLocalizedString(@"Create symbolic links on Desktop", @"Target Preference")];
+			[targetSwitch sizeToFit];
+			const CGFloat padding = 20.0;
+			NSRect targetSwitchFrame = [targetSwitch frame];
+			targetSwitchFrame.origin = NSMakePoint(padding, padding);
+			[targetSwitch setFrame: targetSwitchFrame];
+			preferencesWindow = [[NSWindow alloc] initWithContentRect: NSInsetRect(targetSwitchFrame, -padding, -padding) styleMask: NSTitledWindowMask | NSClosableWindowMask backing: NSBackingStoreBuffered defer: YES];
+			self.preferencesWindow = preferencesWindow;
+			[preferencesWindow release];
+			[preferencesWindow setDelegate: self];
+			[preferencesWindow setTitle: [[NSBundle mainBundle] objectForInfoDictionaryKey: @"CFBundleName"]];
+			[[preferencesWindow contentView] addSubview: targetSwitch];
+			[targetSwitch release];
+		}
+		if (![preferencesWindow isVisible]) {
+			[preferencesWindow center];
+		}
+		[preferencesWindow makeKeyAndOrderFront: nil];
+		[NSApp activateIgnoringOtherApps: YES];
+	}
+
+	- (void)toggleDesktopTarget: (id)sender {
+		[[NSUserDefaults standardUserDefaults] setBool: ([sender state]==NSOnState) forKey: DESKTOP_TARGET_KEY];
 	}
 
 	- (void)applicationDidFinishLaunching: (NSNotification*)notification {
