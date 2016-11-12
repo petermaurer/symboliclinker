@@ -96,7 +96,7 @@ static OSErr SLMakeSymbolicLink(const char *linkedPath, NSURL *targetURL, NSStri
 static void SLMakeSymbolicLinks(NSArray *fileURLs) {
 	NSURL *relativeSymlinkParentURL;
 	NSURL *desktopURL;
-	if (([NSEvent modifierFlags] & NSAlternateKeyMask)==0) {
+	if (([NSEvent modifierFlags] & NSCommandKeyMask)==0) {
 		relativeSymlinkParentURL = nil;
 		desktopURL = [[NSFileManager defaultManager] URLForDirectory: NSDesktopDirectory inDomain: NSUserDomainMask appropriateForURL: nil create: NO error: NULL];
 	} else {
