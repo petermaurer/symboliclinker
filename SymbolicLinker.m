@@ -46,10 +46,6 @@ static void SLCreateSymbolicLinkOnDesktop(CFURLRef sourceURL) {
 	}
 }
 
-static void SLLocalizationCrutch(void) {
-	NSLocalizedStringFromTable(@"Make Symbolic Link", @"ServicesMenu", @"Localized title of the symbolic link service (for Snow Leopard & later users)");	// this is here just so genstrings will pick up the localized service name
-}
-
 
 @implementation SymbolicLinker
 
