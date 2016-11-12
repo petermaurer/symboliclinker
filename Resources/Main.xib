@@ -31,7 +31,8 @@
                                 <menu key="submenu" title="Services" systemMenu="services" id="130"/>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="144"/>
-                            <menuItem title="Hide Symbolic Linker" keyEquivalent="h" id="134">
+                            <menuItem title="Hide Symbolic Linker" id="134">
+                                <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="hide:" target="-1" id="369"/>
                                 </connections>
@@ -49,7 +50,8 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="149"/>
-                            <menuItem title="Quit Symbolic Linker" keyEquivalent="q" id="136">
+                            <menuItem title="Quit Symbolic Linker" id="136">
+                                <modifierMask key="keyEquivalentModifierMask"/>
                                 <connections>
                                     <action selector="terminate:" target="-2" id="448"/>
                                 </connections>

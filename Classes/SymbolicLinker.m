@@ -154,11 +154,6 @@ static OSErr SLSymlink(const char *sourcePath, NSURL *targetURL, NSString *name,
 		}
 	}
 
-	- (void)dealloc {
-		[_preferencesWindow release];
-		[super dealloc];
-	}
-
 @end
 
 
