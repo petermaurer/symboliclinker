@@ -46,7 +46,6 @@
 		E0E29B4F1041EA5C001084AF /* SymbolicLinker.service */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = SymbolicLinker.service; path = "Symbolic Linker.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		E0E29B511041EA5C001084AF /* Info.plist */ = {isa = PBXFileReference; explicitFileType = text.xml; name = Info.plist; path = Resources/Info.plist; sourceTree = "<group>"; };
 		E0E29B581041ED13001084AF /* Main.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Main.xib; path = Resources/Main.xib; sourceTree = "<group>"; };
-		E0E29B5A1041ED34001084AF /* SymbolicLinker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SymbolicLinker.h; path = Classes/SymbolicLinker.h; sourceTree = "<group>"; };
 		E0E29B5B1041ED34001084AF /* SymbolicLinker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SymbolicLinker.m; path = Classes/SymbolicLinker.m; sourceTree = "<group>"; };
 		E0E29B5D1041ED85001084AF /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
@@ -66,7 +65,6 @@
 		089C166AFE841209C02AAC07 /* SymbolicLinker */ = {
 			isa = PBXGroup;
 			children = (
-				E0E29B5A1041ED34001084AF /* SymbolicLinker.h */,
 				E0E29B5B1041ED34001084AF /* SymbolicLinker.m */,
 				089C167CFE841241C02AAC07 /* Resources */,
 				D08A336D1DD7181300A3C128 /* Images */,
