@@ -62,7 +62,7 @@ static NSString *SLRelativeFileURLPath(NSURL *baseURL, NSURL *targetURL) {
 
 static OSErr SLMakeSymlink(const char *linkedPath, NSURL *targetURL, NSString *name, BOOL appendSuffix, NSMutableArray *symlinkURLs) {
 	@autoreleasepool {
-		NSInteger attempt = (appendSuffix ? 0 : -1);
+		long attempt = (appendSuffix ? 0 : -1);
 		do {
 			NSString *symlinkName;
 			switch (attempt) {
@@ -73,7 +73,7 @@ static OSErr SLMakeSymlink(const char *linkedPath, NSURL *targetURL, NSString *n
 					symlinkName = [name stringByAppendingString: @" Symlink"];
 					break;
 				default:
-					symlinkName = [NSString stringWithFormat: @"%@ Symlink %ld", name, (long)attempt];
+					symlinkName = [NSString stringWithFormat: @"%@ Symlink %ld", name, attempt];
 					break;
 			}
 			NSURL *symlinkURL = [targetURL URLByAppendingPathComponent: symlinkName];
