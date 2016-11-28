@@ -89,7 +89,7 @@ static OSErr SLMakeSymlink(const char *linkedPath, NSURL *targetURL, NSString *n
 				return errno;
 			}
 			attempt++;
-		} while (attempt<NSIntegerMax);
+		} while (attempt<LONG_MAX);
 	}
 	return EEXIST;
 }
