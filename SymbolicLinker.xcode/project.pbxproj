@@ -135,7 +135,7 @@
 		089C1669FE841209C02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0810;
+				LastUpgradeCheck = 1220;
 			};
 			buildConfigurationList = E0DC7C8508D40C5B00002C54 /* Build configuration list for PBXProject "SymbolicLinker" */;
 			compatibilityVersion = "Xcode 6.3";
@@ -155,6 +155,7 @@
 				pt,
 				nb,
 				nn,
+				Base,
 			);
 			mainGroup = 089C166AFE841209C02AAC07 /* SymbolicLinker */;
 			projectDirPath = "";
@@ -239,11 +240,13 @@
 		E0DC7C8608D40C5B00002C54 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				OTHER_CODE_SIGN_FLAGS = "--digest-algorithm=sha1,sha256";
 				PRODUCT_BUNDLE_IDENTIFIER = de.petermaurer.SymbolicLinker;
 				PRODUCT_NAME = "Symbolic Linker";
 			};
@@ -252,10 +255,12 @@
 		E0DC7C8708D40C5B00002C54 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				INFOPLIST_FILE = Resources/Info.plist;
 				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				OTHER_CODE_SIGN_FLAGS = "--digest-algorithm=sha1,sha256";
 				PRODUCT_BUNDLE_IDENTIFIER = de.petermaurer.SymbolicLinker;
 				PRODUCT_NAME = "Symbolic Linker";
 			};
