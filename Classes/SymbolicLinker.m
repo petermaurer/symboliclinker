@@ -1,9 +1,10 @@
 //
-//  SymbolicLinker.m
 //  SymbolicLinker
 //
 //  Created by Nick Zitzmann on 8/23/09.
 //  Copyright 2009 Nick Zitzmann. All rights reserved.
+//
+//	Forked and tweaked to my liking by Peter Maurer.
 //
 // Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 //
@@ -166,7 +167,7 @@ static void SLMakeSymlinks(NSArray *fileURLs) {
 
 @implementation SymbolicLinker
 
-	- (void)makeSymbolicLink: (NSPasteboard*)pasteboard userData: (NSString*)userData error: (NSString**)error {
+	- (void)makeSymbolicLink: (NSPasteboard *)pasteboard userData: (NSString *)userData error: (NSString **)error {
 		NSArray *fileURLs = [pasteboard readObjectsForClasses: @[[NSURL class]] options: @{NSPasteboardURLReadingFileURLsOnlyKey: @YES}];
 		if ([fileURLs count]>0) {
 			SLMakeSymlinks(fileURLs);
@@ -223,13 +224,13 @@ static void SLMakeSymlinks(NSArray *fileURLs) {
 		[[NSUserDefaults standardUserDefaults] setBool: ([sender state]==NSOnState) forKey: USER_DEFAULT_PREFER_DESKTOP_TARGET];
 	}
 
-	- (void)applicationDidFinishLaunching: (NSNotification*)notification {
+	- (void)applicationDidFinishLaunching: (NSNotification *)notification {
 		NSUpdateDynamicServices();
 		[NSApp setServicesProvider: self];
 		[self performSelector: @selector(showPreferences) withObject: nil afterDelay: 1.0];
 	}
 
-	- (void)windowWillClose: (NSNotification*)notification {
+	- (void)windowWillClose: (NSNotification *)notification {
 		if ([notification object]==self.preferencesWindow) {
 			[NSApp terminate: nil];
 		}
